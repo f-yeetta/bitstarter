@@ -3,9 +3,7 @@
 Automatically grade files for the presence of specified HTML tags/attributes.
 Uses commander.js and cheerio. Teaches command line application development
 and basic DOM parsing.
-
-References:
-
+References: 
  + cheerio
    - https://github.com/MatthewMueller/cheerio
    - http://encosia.com/cheerio-faster-windows-friendly-alternative-jsdom/
@@ -22,10 +20,16 @@ References:
 */
 
 var fs = require('fs');
+var sys = require('util');
 var program = require('commander');
 var cheerio = require('cheerio');
+var rest = require('restler');
+var request = require('request');
+
 var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
+var URL_DEFAULT="http://young-lowlands-4739.herokuapp.com/";
+var TMP_FILE="/tmp/xyz.html";
 
 var assertFileExists = function(infile) {
     var instr = infile.toString();
@@ -57,10 +61,21 @@ var checkHtmlFile = function(htmlfile, checksfile) {
 
 if(require.main == module) {
     program
-        .option('-c, --checks ', 'Path to checks.json', assertFileExists, CHECKSFILE_DEFAULT)
-        .option('-f, --file ', 'Path to index.html', assertFileExists, HTMLFILE_DEFAULT)
+        .option('-c, --checks <checks>', 'Path to checks.json', assertFileExists, CHECKSFILE_DEFAULT)
+        .option('-f, --file <file>', 'Path to index.html', assertFileExists)
+        .option('-u, --url <url>', 'URL to check')
         .parse(process.argv);
-    var checkJson = checkHtmlFile(program.file, program.checks);
+    if (program.file) {
+	console.log("It's a file");
+        var checkJson = checkHtmlFile(program.file, program.checks);
+    }
+    if (program.url) {
+	//console.log("It's an URL: %s",program.url);
+	request(URL_DEFAULT).pipe(fs.createWriteStream(TMP_FILE));
+	// trick to make sure stream has been written
+	var buf = new Buffer(fs.readFileSync("index.html")); 
+        var checkJson = checkHtmlFile(TMP_FILE, program.checks); 
+    }             
     var outJson = JSON.stringify(checkJson, null, 4);
     console.log(outJson);
 } else {
