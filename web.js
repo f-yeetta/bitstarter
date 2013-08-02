@@ -9,7 +9,8 @@ app.get('/', function(request, response) {
   response.send(buf.toString());
 });
 
-app.use(express.static(__dirname + '/bootstrap'));
+app.use(express.static(__dirname + '/css'));
+app.use(express.static(__dirname + '/fonts'));
 
 var port = process.env.PORT ||8080;
 app.listen(port, function() {
